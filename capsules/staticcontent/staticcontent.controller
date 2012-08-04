@@ -1,0 +1,16 @@
+<?php
+
+class Staticcontent extends Capsule
+{
+	function prepare($params)
+	{
+		parse_str($params, $this->params);
+		$content = "";
+
+		$sfilename = str_replace('/','', $this->params['name']);
+		if(file_exists(CONTENT_PATH.$sfilename.'.html'))
+		$content =  file_get_contents(CONTENT_PATH.$sfilename.'.html');
+
+		$this->params['content']	= $content;
+	}
+}

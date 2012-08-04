@@ -1,0 +1,108 @@
+<?php
+
+class Session {
+
+	var $idsession;
+	var $sip;
+	var $iduser;
+	var $ssessioncode;
+	
+	function Session() {
+		if(array_key_exists('HTTP_X_FORWARDED_FOR',$_SERVER))
+		$sip = $_SERVER['HTTP_X_FORWARDED_FOR'];
+		else $sip = $_SERVER['REMOTE_ADDR'];
+		$this->sip = $sip;
+		$this->iduser = 0;
+		$this->ssessioncode = '';
+		$this->idsession = 0;
+		
+		//too sticky
+		// $this->ssessioncode = $_COOKIE['idsession'];
+		
+		if(isset($_POST['sidsession'])) $this->ssessioncode = $_POST['sidsession'];
+		if(strlen($this->ssessioncode)==0) if(isset($_GET['sidsession'])) $this->ssessioncode = $_GET['sidsession'];
+		if(strlen($this->ssessioncode)==0) if(isset($_COOKIE['sidsession'])) $this->ssessioncode = $_COOKIE['sidsession'];
+		$odb = getOdb();
+		$asession = array();
+		if(strlen($this->ssessioncode)==32) {
+			//verify session
+			$asession = $odb->getOneRow("select idsession,iduser from tab_sessions where ssessioncode='".$odb->escapeString($this->ssessioncode)."' and sip='$sip'");
+			if($asession['idsession']>0) $this->idsession = $asession['idsession'];
+		}
+		else $this->ssessioncode = md5($sip.time().microtime().rand(0,1000000));
+		error_log(date("H:i")." session code ".$this->ssessioncode."\n",3,LOGS_PATH.date("Y-m-d")."-session.log");
+		if($this->idsession==0) {
+			//make new session
+			$odb->runInsert('tab_sessions',array('sip'=>$sip,'ssessioncode'=>$this->ssessioncode,'sbrowser'=>$_SERVER['HTTP_USER_AGENT']));
+			$this->idsession = $odb->insertId('tab_sessions','idsession');
+			error_log(" made session #".$this->idsession."\n",3,LOGS_PATH.date("Y-m-d")."-session.log");
+		}	
+		else error_log(" has session #".$this->idsession."\n",3,LOGS_PATH.date("Y-m-d")."-session.log");
+		
+		$odb->query('update tab_sessions set tlastaction=now() where idsession='.$this->idsession);
+		setCookie('sidsession',$this->ssessioncode,SECURITY_SESSION_DEADLINE,'/');
+			
+		if(!isset($_POST['firstlogin']) || $_POST['firstlogin']!=1) if(isset($asession['iduser'])) if($asession['iduser']>0) 
+		$this->iduser = $asession['iduser'];
+		
+		if($this->iduser==0) if(isset($_POST['spassword'])) {
+			//try log in
+			if(strlen($_POST['spassword'])>0) $this->logIn($_POST['slogin'],$_POST['spassword']);
+			
+			// too sticky
+			// else $this->logIn($_COOKIE['slogin'],$_COOKIE['spassword']);
+		}
+	}
+	
+	function logout() {
+		$odb = getOdb();
+		$odb->query('update tab_sessions set iduser=0 where idsession='.$this->idsession);
+	}
+	
+	function getId() {
+		return $this->idsession;
+	}
+	
+	function getCode() {
+		return $this->ssessioncode;
+	}
+	
+	function loggedIn() {
+		if($this->iduser>0) return true;
+		return false;
+	}
+	
+	function logIn($slogin,$spassword) {
+		$odb = getOdb();
+		// echo md5($spassword);
+		// echo "select iduser from tab_users where slogin='".$odb->escapeString($slogin)."' and spassword='".md5($spassword)."' and bactive=1 ";
+		$auser = $odb->getOneRow("select iduser from tab_users where semail='".$odb->escapeString($slogin)."' and spassword='".md5($spassword)."' and bactive=1");
+		if(isset($auser['iduser']) && (int)$auser['iduser']>0) {
+			if($this->iduser!=(int)$auser['iduser']) {
+				$odb->query('update tab_sessions set iduser='.(int)$auser['iduser'].' where idsession='.$this->idsession);
+				$odb->query('update tab_users set tlastlogin=now() where iduser='.(int)$auser['iduser']);
+				//setcookie('iduser',(int)$auser['iduser']);
+			}
+			$this->iduser = (int)$auser['iduser'];
+		}
+		else $this->serrors = 'Hasło nieprawidłowe. Sprawdź czy nie ma pomyłki i spróbuj ponownie.';
+	}
+	
+	function autoLogIn($iduser) {
+		$odb = getOdb();
+		$odb->query('update tab_sessions set iduser='.(int)$iduser.' where idsession='.$this->idsession);
+		$odb->query('update tab_users set tlastlogin=now() where iduser='.(int)$iduser);
+		// setcookie('iduser',(int)$iduser);
+		$this->iduser = (int)$iduser;
+	}
+	
+	function getIdUser() {
+		return $this->iduser;
+	}
+	
+	function getErrors() {
+		if(isset($this->serrors)) return $this->serrors;
+		return false;
+	}
+	
+}

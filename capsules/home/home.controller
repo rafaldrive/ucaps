@@ -1,0 +1,22 @@
+<?php
+
+class Home extends Capsule
+{
+	function prepare($params) {
+	
+		//PUT YOUR CODE HERE
+		//everything here is optional
+		//in fact - this whole controller file is optional - you can go with just the view
+		
+		//example how to load a model and use it
+		loadModel('session');
+		// $session = new Session();
+		
+		//example how to transfer data to the view
+		// $this->params['sessionid'] = $session->getId();
+		$this->params['info'] = 'EASY :)';
+	}
+	
+}
+
+

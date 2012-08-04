@@ -1,0 +1,14 @@
+Things to do in order to start using uCaps:
+
+1. Your vhost in Apache should have "DocumentRoot" pointed to "public" directory.
+
+2. You need mod_rewrite in your Apache running.
+
+3(recommended). Create the following directories:
+	logs
+	temp
+and make sure Apache CAN write into them.
+Those are commonly used.
+
+4(optional). If you want BufferedCapsules to work - you need to make "public" directory writable by Apache.
+

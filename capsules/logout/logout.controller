@@ -1,0 +1,17 @@
+<?php
+
+class Logout extends Capsule
+{
+	function prepare($params) {
+	
+		loadModel('session');
+		$osession = new Session();
+		if($osession->loggedIn()) $osession->logout();
+		
+		header('Location: /'); 
+		die(); 
+		
+	}
+	
+}
+

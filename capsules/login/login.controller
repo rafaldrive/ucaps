@@ -1,0 +1,32 @@
+<?php
+
+class Login extends Capsule
+{
+	function prepare($sparams) {
+	
+		//check logged in users
+		loadModel('session');
+		$osession = new Session();
+		$iduser = $osession->getIdUser();
+		
+		parse_str($sparams, $this->params);
+		
+		//redir back from somewhere
+		if($iduser>0) {
+			if(isset($_GET['r'])) header('Location: '.$_GET['r']);
+			else header('Location: /');
+			die();
+		}
+		
+		//display errors
+		$this->params['serrors'] = $osession->getErrors();
+		
+		$this->loadSubCapsule('footers');
+		$this->loadSubCapsule('headers','iduser='.$iduser);
+		$this->loadSubCapsule('home/topmenu');
+		$this->loadSubCapsule('home/searchform');
+		$this->loadSubCapsule('home/leftcolumn');
+		
+	}
+}
+

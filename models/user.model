@@ -1,0 +1,29 @@
+<?php
+
+class User {
+
+	var $id;
+	var $auserdata;
+	
+	function User($id) {
+		$this->id = $id;
+	}
+	
+	function getIdRegion() {
+		if(!is_array($this->auserdata)) {
+			$odb = getOdb();
+			$this->auserdata = $odb->getOneRow('select * from tab_users where iduser=?',array($this->id));
+		}
+		return $this->auserdata['idregion'];
+	}
+	
+	function getName() {
+		if(!is_array($this->auserdata)) {
+			$odb = getOdb();
+			$this->auserdata = $odb->getOneRow('select * from tab_users where iduser=?',array($this->id));
+		}
+		return $this->auserdata['semail'];
+	}
+
+}
+

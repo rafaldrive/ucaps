@@ -1,0 +1,11 @@
+<?php
+
+class Staticpage extends Capsule
+{
+	function prepare($sparams) {
+		$this->loadSubCapsule('staticcontent', $sparams);
+		$this->loadSubCapsule('footers');
+		$this->loadSubCapsule('headers');
+	}
+}
+

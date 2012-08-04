@@ -1,0 +1,43 @@
+<?= $headers ?>
+
+<?= $topmenu ?>
+
+<?= $searchform ?>
+
+<?= $leftcolumn ?>
+
+<div id="column2">
+
+	<h1>Zaloguj się</h1>
+	
+	<p>Wpisz adres email, podany przy rejestracji i hasło.</p>
+	
+	<div class="error" style="padding: 10px;">
+	<?= $serrors ?>
+	</div>
+	
+	<fieldset class="register">
+
+		<form id="loginform3" method="post">
+			<input type="hidden" name="redirect_to" value="/" />
+			<input type="hidden" name="testcookie" value="1" />
+			<input type="hidden" name="instance" value="" />
+			
+			<label class="label1">adres e-mail:<span>*</span></label>
+			<input type = "text" name="slogin" class="text1" id="user_login3" />
+			
+			<label class="label1">hasło:<span>*</span></label>
+			<input type="password" name="spassword" class="text1" id="user_password3" onkeypress="return submitenter(this,event)"/>
+	
+			<a href="/lostpassword" style="font-weight: bold; color: #0CA5D2; text-decoration: none;">zapomnialem hasła</a>
+			<button class="login" type="submit">zaloguj się</button>
+		</form>
+	
+	</fieldset>
+	
+	
+	
+
+</div>
+
+<?= $footers ?>
