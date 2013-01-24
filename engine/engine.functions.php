@@ -38,8 +38,15 @@ function loadLib($sname) {
 function getCapsule($surl='') {
 	serveStaticFiles($surl);
 	$acapsule = getCapsuleFromUrlmap($surl);
-	if(ALLOW_AUTO_URL_MAPPING) if(count($acapsule)==0) $acapsule = getCapsuleFromAutomapping($surl);
-	if(count($acapsule)==0) $acapsule = array('capsule'=>'notfound','params'=>'surl='.$surl);
+	// echo " urlmap gives ";
+	// var_dump($acapsule);
+	if(ALLOW_AUTO_URL_MAPPING) {
+		if(count($acapsule)==0) $acapsule = getCapsuleFromAutomapping($surl);
+		// echo " automap gives ";
+		// var_dump($acapsule);
+	}
+	if(count($acapsule)==0) $acapsule = array('capsule'=>'notfound','params'=>'','surl='.$surl);
+	// var_dump($acapsule);
 			
 	if(empty($acapsule['controller'])) {
 		if(file_exists(CAPSULES_PATH.$acapsule['capsule'].'/'.$acapsule['capsule'].'.controller')) 
@@ -102,7 +109,8 @@ function getCapsuleFromUrlmap($surl) {
 		}
 	}
 	//not found?
-	if($n==count($urlmap)) if($nmatchcounter != $nurlparts) return array();
+	// echo " n=$n c=".count($urlmap)." nmatchcounter=$nmatchcounter nurlparts=$nurlparts ";
+	if($n==count($urlmap)) if($nmatchcounter != $nurlparts) if($apage['urlschema']!='/') return array();
 	
 	if($params) if($params[0]=='&') $params = substr($params,1);
 	if(empty($controller)) $controller = $capsulename;
@@ -123,6 +131,7 @@ function isParam($sargument) {
 }
 
 function getCapsuleFromAutomapping($surl) {
+	if(strlen($surl)==0) return array();
 	if($surl[0]=='/') $surl = substr($surl,1);
 	
 	//accept only existing Capsules
@@ -130,6 +139,7 @@ function getCapsuleFromAutomapping($surl) {
 	$capsulename = $aurlparts[0];
 	if(!is_dir(CAPSULES_PATH.$capsulename)) return array();
 	
+	$params = '';
 	$nurlparts = count($aurlparts);
 	if($nurlparts==2) {
 	
@@ -138,20 +148,35 @@ function getCapsuleFromAutomapping($surl) {
 		$filename = $path_parts['basename'];
 		$filename = str_replace(' ','_',$filename);
 		$filename = str_replace('%20','_',$filename);
-		$viewpath = CAPSULES_PATH.$capsulename.'/'.$filename.'.view';
 		$capspath = CAPSULES_PATH.$capsulename.'/'.$filename.'.controller';
-		if(file_exists($capspath)) return array('capsule'=>$capsulename,'controller'=>$filename,'view'=>$filename,'params'=>array());
-		if(file_exists($viewpath)) return array('capsule'=>$capsulename,'controller'=>'capsule','view'=>$filename,'params'=>array());
+		if(file_exists($capspath)) return array('capsule'=>$capsulename,'controller'=>$filename,'view'=>$filename,'params'=>'');
+		
+		$viewpath = CAPSULES_PATH.$capsulename.'/'.$filename.'.view';
+		if(DEFAULT_BUFFERTIME>0) {
+			loadLib('bufferedcapsule');
+			$controller = 'bufferedcapsule';
+			$params = name2url($path);
+		}
+		else $controller = 'capsule';
+		if(file_exists($viewpath)) return array('capsule'=>$capsulename,'controller'=>$controller,'view'=>$filename,'params'=>$params);
 		
 	}
 	if($nurlparts==1) {
-	
+		
 		//url like /capsulename
 		$viewpath = CAPSULES_PATH.$capsulename.'/'.$capsulename.'.view';
+		// echo " mapping $capsulename ";
 		if(file_exists(CAPSULES_PATH.$capsulename.'/'.$capsulename.'.controller')) $controller = $capsulename;
-		else $controller = 'capsule';
-		if(file_exists($viewpath)) return array('capsule'=>$capsulename,'controller'=>$controller,'view'=>$capsulename,'params'=>array());
-		
+		else {
+			if(DEFAULT_BUFFERTIME>0) {
+				loadLib('bufferedcapsule');
+				$controller = 'bufferedcapsule';
+				$params = name2url($path);
+			}
+			else $controller = 'capsule';
+		}
+		if(file_exists($viewpath)) return array('capsule'=>$capsulename,'controller'=>$controller,'view'=>$capsulename,'params'=>$params);
+		if(file_exists(CAPSULES_PATH.$capsulename.'/'.$capsulename.'.controller')) return array('capsule'=>$capsulename,'controller'=>$controller,'view'=>$capsulename,'params'=>$params);
 	}
 	return array();
 }
@@ -182,6 +207,10 @@ function serveStaticFiles($surl) {
 	
 	//serve
 	switch($ext) {
+		case 'woff':
+			header('Content-Type: font/woff');
+			break;
+		
 		case 'css':
 			header('Content-Type: text/css');
 			break;
@@ -233,6 +262,7 @@ function name2url($sname) {
 	$sOK .= "-_";
 
 	$sText = str_replace($aSzukaj, $aZamien, $sText);
+	$sText = strtolower($sText);
 	$sTextN = "";
 
 	for ( $i = 0; $i < strlen($sText); $i++ )

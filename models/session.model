@@ -27,7 +27,7 @@ class Session {
 		if(strlen($this->ssessioncode)==32) {
 			//verify session
 			$asession = $odb->getOneRow("select idsession,iduser from tab_sessions where ssessioncode='".$odb->escapeString($this->ssessioncode)."' and sip='$sip'");
-			if($asession['idsession']>0) $this->idsession = $asession['idsession'];
+			if(isset($asession['idsession'])) $this->idsession = $asession['idsession'];
 		}
 		else $this->ssessioncode = md5($sip.time().microtime().rand(0,1000000));
 		error_log(date("H:i")." session code ".$this->ssessioncode."\n",3,LOGS_PATH.date("Y-m-d")."-session.log");
@@ -48,9 +48,6 @@ class Session {
 		if($this->iduser==0) if(isset($_POST['spassword'])) {
 			//try log in
 			if(strlen($_POST['spassword'])>0) $this->logIn($_POST['slogin'],$_POST['spassword']);
-			
-			// too sticky
-			// else $this->logIn($_COOKIE['slogin'],$_COOKIE['spassword']);
 		}
 	}
 	
@@ -85,7 +82,7 @@ class Session {
 			}
 			$this->iduser = (int)$auser['iduser'];
 		}
-		else $this->serrors = 'Hasło nieprawidłowe. Sprawdź czy nie ma pomyłki i spróbuj ponownie.';
+		else $this->serrors = 'Incorrect password. Try again.';
 	}
 	
 	function autoLogIn($iduser) {

@@ -6,7 +6,6 @@ class Capsule {
   	var $html = ''; 		
 
 	function Capsule($view=false) {
-		$this->buffertime = (int)DEFAULT_BUFFERTIME;
 		if($view) $this->viewpath = $view;
 		else $this->viewpath = strtolower(get_class($this).'/'.get_class($this).'.view');
 		$this->params = array();
@@ -46,7 +45,14 @@ class Capsule {
 		else $controller = ucwords($path);
 		
 		if(file_exists(CAPSULES_PATH.$path.'.controller')) require_once CAPSULES_PATH.$path.'.controller';
-		else $controller = 'Capsule';
+		else {
+			if(DEFAULT_BUFFERTIME>0) {
+				loadLib('bufferedcapsule');
+				$controller = 'Bufferedcapsule';
+				$params = name2url($path);
+			}
+			else $controller = 'Capsule';
+		}
 		
 		$view = $path.'.view';
 		

@@ -186,13 +186,21 @@ class DatabaseInterface
 
 	// PRIVATE
 	function notify($stype,$stitle,$sbody) {
+		$sip = '';
+		if(isset($_SERVER['REMOTE_ADDR']))
+		$sip = $_SERVER['REMOTE_ADDR'];
 		if(isset($_SERVER['HTTP_X_FORWARDED_FOR']))
 		$sip = $_SERVER['HTTP_X_FORWARDED_FOR'];
-		else $sip = $_SERVER['REMOTE_ADDR'];
+		
+		$sreferer = '';
 		if(isset($_SERVER['HTTP_REFERER']))
 		$sreferer = $_SERVER['HTTP_REFERER'];
-		else $sreferer = '';
+		
+		$suri = '';
+		if(isset($_SERVER['HTTP_HOST']))
+		if(isset($_SERVER['REQUEST_URI']))
 		$suri = $_SERVER["HTTP_HOST"].$_SERVER["REQUEST_URI"];
+		
 		error_log(date("H:i")." from $sip \n URI $suri \n REF $sreferer \n $sbody \n\n",3,LOGS_PATH.date("Y-m-d")."-odb-".$stype.".log");
 	}
 

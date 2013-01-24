@@ -11,6 +11,7 @@ define('CAPSULES_PATH', 	ROOT_PATH.'/capsules/');
 define('CONTENT_PATH', 		ROOT_PATH.'/content/');
 define('TEMP_PATH', 			ROOT_PATH.'/temp/');
 define('BACKGROUND_PATH', 	ROOT_PATH.'/background/');
+$protectedFilesInPublic = array('.htaccess','index.php','robots.txt','pma351','.svn');
 
 //loading deployment-specific confugiration
 if(file_exists(ROOT_PATH.'/location')) 

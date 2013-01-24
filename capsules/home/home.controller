@@ -3,7 +3,8 @@
 class Home extends Capsule
 {
 	function prepare($params) {
-	
+		parse_str($params, $this->params);
+		
 		//PUT YOUR CODE HERE
 		//everything here is optional
 		//in fact - this whole controller file is optional - you can go with just the view

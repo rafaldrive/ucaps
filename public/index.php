@@ -28,6 +28,7 @@ $html = $capsuleobject->getHtml();
 echo $html;
 
 // real static file buffering
+if(isset($capsuleobject->buffertime))
 if($capsuleobject->buffertime>0) {
 	$bufferpath = PUBLIC_PATH.$surl;
 	if(!file_exists($bufferpath)) { mkdir($bufferpath,0775,true); chmod($bufferpath, 0775);}

@@ -5,22 +5,21 @@
  */
  
 require_once '../config.php';
+require_once ENGINE_PATH.'engine.functions.php';
 
 //one instance at a time
 loadLib('semaphore');
-$semaphore = new Semaphore('maintenance');
+$semaphore = new Semaphore('maintenance','takeover mode',true);
 if(!$semaphore->isMine()) die(0);
 
 //establish db connection
-require_once ENGINE_PATH.'engine.functions.php';
-$odb = getOdb();
+// $odb = getOdb();
 
-
-
-//PUT YOUR CODE HERE
-//and do something 
-
-
+//clean cache
+loadLib('filesystem');
+echo "\n".date('Y-m-d H:i:s')."\n";
+Filesystem::removeFromPublic('*',true);
+Filesystem::remove(TEMP_PATH.'*',true);
 
 //clear the semaphore
 $semaphore->clear();
